@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "clean-webpack-plugin": "^4.0.0",
     "css-loader": "^6.7.1",
     "file-loader": "^6.2.0",
     "glslify-loader": "^2.0.0",
@@ -24,7 +25,8 @@
   },
   "scripts": {
     "test": "webpack --config ./bundler/webpack.common.js",
-    "dev": "webpack serve --config ./bundler/webpack.dev.js"
+    "dev": "webpack serve --config ./bundler/webpack.dev.js",
+    "build": "webpack --config ./bundler/webpack.prod.js"
   },
   "keywords": [],
   "author": "",
