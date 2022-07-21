@@ -6,13 +6,13 @@ module.exports = {
 	entry: path.resolve(__dirname, '../src/index.js'),
 	output: {
 		filename: 'bundle.[hash].js',
-		path: path.resolve(__dirname, '../static')
+		path: path.resolve(__dirname, '../build')
 	},
 	devtool: 'source-map',
 	plugins: [
 		new CopyPlugin({
             patterns: [
-                { from: path.resolve(__dirname, '../static/') }
+                { from: path.resolve(__dirname, '../build/') }
             ]
         }),
 		new HtmlWebpackPlugin({
