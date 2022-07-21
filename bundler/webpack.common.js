@@ -52,17 +52,11 @@ module.exports = {
 
             // Images
             {
-                test: /\.(jpg|png|gif|svg)$/,
-                use:
-                [
-                    {
-                        loader: 'file-loader',
-                        options:
-                        {
-                            outputPath: 'assets/images/'
-                        }
-                    }
-                ]
+                test: /\.(jpe?g|png|gif|svg)$/,
+                loader: 'file-loader',
+                options: {
+                    name: '/assets/[name].[ext]'
+                }
             },
 
             // Shaders
