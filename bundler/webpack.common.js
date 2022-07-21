@@ -5,14 +5,15 @@ const path = require('path')
 module.exports = {
 	entry: path.resolve(__dirname, '../src/index.js'),
 	output: {
-		filename: 'bundle.[hash].js',
-		path: path.resolve(__dirname, '../build')
+		filename: 'bundle.[contenthash].js',
+		path: path.resolve(__dirname, '../dist'),
+        assetModuleFilename: 'assets/[name][ext]'
 	},
 	devtool: 'source-map',
 	plugins: [
 		new CopyPlugin({
             patterns: [
-                { from: path.resolve(__dirname, '../build/') }
+                { from: path.resolve(__dirname, '../static') }
             ]
         }),
 		new HtmlWebpackPlugin({
@@ -20,14 +21,14 @@ module.exports = {
 			minify: true
 		})
 	],
-	module:
-    {
-        rules:
-        [
+	module: {
+        rules: [
             // HTML
             {
                 test: /\.(html)$/,
-                use: ['html-loader']
+                use: {
+                    loader: 'html-loader'
+                }
             },
 
             // JS
@@ -52,11 +53,15 @@ module.exports = {
 
             // Images
             {
-                test: /\.(jpe?g|png|gif|svg)$/,
-                loader: 'file-loader',
-                options: {
-                    name: '/assets/[name].[ext]'
-                }
+                test: /\.(jpe?g|png|gif|svg)$/i,
+                type: "asset/resource"
+                //use: {
+                //    loader: 'file-loader',
+                //    options: {
+                //        name: '/assets/[name].[ext]'
+                //    }
+                //}
+                
             },
 
             // Shaders
