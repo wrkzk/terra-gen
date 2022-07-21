@@ -7,7 +7,8 @@ module.exports = {
 	output: {
 		filename: 'bundle.[contenthash].js',
 		path: path.resolve(__dirname, '../dist'),
-        assetModuleFilename: 'assets/[name][ext]'
+        assetModuleFilename: 'assets/[name][ext]',
+        publicPath: "/terra-gen/",
 	},
 	devtool: 'source-map',
 	plugins: [
