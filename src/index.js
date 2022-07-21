@@ -5,7 +5,7 @@ import SimplexNoise from 'simplex-noise';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import * as dat from 'dat.gui';
 
-var scene, camera, canvas, renderer, controls, gui, mesh;
+var scene, camera, canvas, renderer, controls, gui, terrainMesh;
 var generators;
 
 var terrain_properties = new function() {
@@ -42,22 +42,30 @@ function compound_noise(x, y, octaves) {
 }
 
 function init_terrain() {
-    let geometry = new THREE.PlaneGeometry(terrain_properties.width, terrain_properties.height, terrain_properties.width - 1, terrain_properties.height - 1);
-    let material = new THREE.MeshBasicMaterial({color: 0x000000, wireframe: true});
-
-    mesh = new THREE.Mesh(geometry, material);
-    mesh.rotation.x = Math.PI / 2
+    let terrainGeometry = new THREE.PlaneGeometry(terrain_properties.width, terrain_properties.height, terrain_properties.width - 1, terrain_properties.height - 1);
+    let baseGeometry = new THREE.PlaneGeometry(terrain_properties.width, terrain_properties.height);
     
-    apply_noise(geometry);
-    scene.add(mesh);
+    let material = new THREE.MeshBasicMaterial({color: 0x000000, wireframe: true});
+    let baseMaterial = new THREE.MeshBasicMaterial({color: 0x000000});
+
+    terrainMesh = new THREE.Mesh(terrainGeometry, material);
+    terrainMesh.rotation.x = Math.PI / 2;
+
+    let baseMesh = new THREE.Mesh(baseGeometry, baseMaterial)
+    baseMesh.rotation.x = Math.PI / 2;
+    baseMesh.position.set(0, -10, 0);
+    
+    apply_noise(terrainGeometry);
+    scene.add(terrainMesh);
+    scene.add(baseMesh)
 }
 
 function update_geometry() {
-    var geometry = new THREE.PlaneGeometry(terrain_properties.width, terrain_properties.height, terrain_properties.width - 1, terrain_properties.height - 1);
-    apply_noise(geometry);
+    var newGeometry = new THREE.PlaneGeometry(terrain_properties.width, terrain_properties.height, terrain_properties.width - 1, terrain_properties.height - 1);
+    apply_noise(newGeometry);
 
     mesh.geometry.dispose();
-    mesh.geometry = geometry;
+    mesh.geometry = newGeometry;
 }
 
 function apply_noise(geo) {
