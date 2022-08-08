@@ -7,6 +7,7 @@ import * as dat from 'dat.gui';
 
 var scene, camera, canvas, renderer, controls, gui, terrainMesh;
 var generators;
+var southMesh, southGeo, northMesh, northGeo, eastMesh, eastGeo, westMesh, westGeo;
 
 var terrain_properties = new function() {
     this.frequency = 0.04;
@@ -32,32 +33,62 @@ function compound_noise(x, y, octaves) {
     let sum = 0;
 
     for (let i=0; i < octaves; i++) {
-        val += noise(x * freq, y * freq, i) * amp;
+        val += noise((x * freq) + 1, (y * freq) + 1, i) * amp;
         sum += amp;
 
         amp /= 2;
         freq *= 2;
     }
-    return val/sum;
+    return val/sum;  
 }
 
 function init_terrain() {
     let terrainGeometry = new THREE.PlaneGeometry(terrain_properties.width, terrain_properties.height, terrain_properties.width - 1, terrain_properties.height - 1);
     let baseGeometry = new THREE.PlaneGeometry(terrain_properties.width, terrain_properties.height);
     
-    let material = new THREE.MeshBasicMaterial({color: 0x000000, wireframe: true});
-    let baseMaterial = new THREE.MeshBasicMaterial({color: 0x000000});
+    let material = new THREE.MeshBasicMaterial({color: 0x555555, wireframe: true});
+    let wallMaterial = new THREE.MeshBasicMaterial({color: 0x555555});
 
     terrainMesh = new THREE.Mesh(terrainGeometry, material);
-    terrainMesh.rotation.x = Math.PI / 2;
+    terrainMesh.rotation.x = -Math.PI / 2;
+    terrainMesh.rotation.z = Math.PI;
 
-    let baseMesh = new THREE.Mesh(baseGeometry, baseMaterial)
+    let baseMesh = new THREE.Mesh(baseGeometry, wallMaterial)
     baseMesh.rotation.x = Math.PI / 2;
-    baseMesh.position.set(0, -10, 0);
+    baseMesh.position.set(0, -11, 0);
+
+
+    southGeo = new THREE.PlaneGeometry(terrain_properties.width, 2, terrain_properties.width - 1, 1);
+    southMesh = new THREE.Mesh(southGeo, wallMaterial);
+    scene.add(southMesh);
+    southMesh.position.set(0, -10, 75);
+
+    northGeo = new THREE.PlaneGeometry(terrain_properties.width, 2, terrain_properties.width - 1, 1);
+    northMesh = new THREE.Mesh(northGeo, wallMaterial);
+    scene.add(northMesh);
+
+    northMesh.rotation.y = Math.PI;
+    northMesh.position.set(0, -10, -75);
+
+    eastGeo = new THREE.PlaneGeometry(terrain_properties.width, 2, terrain_properties.width - 1, 1);
+    eastMesh = new THREE.Mesh(eastGeo, wallMaterial);
+    scene.add(eastMesh);
+
+    eastMesh.rotation.y = Math.PI / 2;
+    eastMesh.position.set(75, -10, 0);
+
+    westGeo = new THREE.PlaneGeometry(terrain_properties.width, 2, terrain_properties.width - 1, 1);
+    westMesh = new THREE.Mesh(westGeo, wallMaterial);
+    scene.add(westMesh);
+
+    westMesh.rotation.y = -Math.PI / 2;
+    westMesh.position.set(-75, -10, 0);
     
     apply_noise(terrainGeometry);
     scene.add(terrainMesh);
-    scene.add(baseMesh)
+    scene.add(baseMesh);
+
+    
 }
 
 function update_geometry() {
@@ -70,6 +101,10 @@ function update_geometry() {
 
 function apply_noise(geo) {
     let positions = geo.attributes.position.array;
+    let southPositions = southGeo.attributes.position.array;
+    let northPositions = northGeo.attributes.position.array;
+    let eastPositions = eastGeo.attributes.position.array;
+    let westPositions = westGeo.attributes.position.array;
 
     for (let i = 0; i < terrain_properties.width; i++) {
         for (let j = 0; j < terrain_properties.height; j++) {
@@ -80,8 +115,15 @@ function apply_noise(geo) {
             if (gen < 0) elevation = gen
             else elevation = 0
             
-            positions[(i * terrain_properties.width + j) * 3 + 2] = elevation;
+            positions[(i * terrain_properties.width + j) * 3 + 2] = -elevation + 10;
         }
+    }
+
+    for (let i = 0; i < terrain_properties.width; i++) {
+        southPositions[i * 3 + 1] = 10 + positions[i * 3 + 2];
+        northPositions[i * 3 + 1] = 10 + positions[positions.length - (i * 3 + 1)];
+        eastPositions[(terrain_properties.width * 3) - (i * 3 + 2)] = 10 + positions[positions.length - (i * terrain_properties.height * 3 + 1)];
+        westPositions[(terrain_properties.width * 3) - (i * 3 + 2)] = 10 + positions[i * terrain_properties.height * 3 + 2];
     }
 }
 
@@ -93,8 +135,8 @@ function init() {
     controls = new OrbitControls(camera, renderer.domElement);
     //gui = new dat.GUI();
 
-    generators = [new SimplexNoise(), new SimplexNoise(), new SimplexNoise(), new SimplexNoise(), new SimplexNoise()];
 
+    generators = [new SimplexNoise(), new SimplexNoise(), new SimplexNoise(), new SimplexNoise(), new SimplexNoise()];
     // Create the gui
     //gui.add(terrain_properties, 'frequency', 0, 0.2).onChange(update_geometry);
     //gui.add(terrain_properties, 'amplitude', 0, 2).onChange(update_geometry);
@@ -102,19 +144,23 @@ function init() {
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.setClearColor(0xf3f2e5);
 
-    controls.enableDamping = false;
+    controls.enableDamping = true;
     controls.enablePan = false;
 
     document.body.appendChild(renderer.domElement);
 
     camera.position.set(0, 120, 150);
     camera.lookAt(0, 0, 0);
-    controls.update();
+
+    const light = new THREE.PointLight( 0xffffff, 1, 100 );
+    light.position.set( 50, 50, 50 );
+    scene.add( light );
 }
 
 function animate() {
 	requestAnimationFrame(animate);
     renderer.render(scene, camera);
+    controls.update();
 };
 
 init();
